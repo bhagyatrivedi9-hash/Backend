@@ -4,8 +4,8 @@ import {authUser} from "../middleware/auth.middleware.js";
 const router = Router();
 
 router.post("/messages",  authUser,sendMessage);
-router.get("/getchats", authUser, getChats);
-router.get("/getmessages/:chatid", authUser, getMessages);
-router.delete("/deletechat/:chatid", authUser, deleteChat);
+router.get("/", authUser, getChats);
+router.get("/messages/:chatId", authUser, getMessages);
+router.delete("/delete/:chatId", authUser, deleteChat);
 
 export default router;
