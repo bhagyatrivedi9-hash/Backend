@@ -2,34 +2,35 @@ import React, { useState } from 'react';
 import { Send, Plus, Settings, MoreVertical } from 'lucide-react';
 import { useChat } from '../hooks/useChat';
 import { useSelector } from 'react-redux';
-
+import ReactMarkdown from 'react-markdown';
 import { useEffect } from 'react';
+import remarkGfm from 'remark-gfm'
+
 const Dashboard = () => {
   const [chatInput, setChatInput] = useState('')
-  const [userMessage, setUserMessage] = useState('')
-const chats= useSelector((state)=> state.chat.chats);
-const currentChatId= useSelector((state)=> state.chat.currentChatId);
-const { initializeSocketConnection, handleGetChats ,handleSendMessage,handleGetMessages,handleDeleteChat} = useChat();
+  const chats = useSelector((state) => state.chat.chats);
+  const currentChatId = useSelector((state) => state.chat.currentChatId);
+  const { handleSendMessage, handleGetChats, handleOpenChat } = useChat();
+
   useEffect(() => {
     const initializeChat = async () => {
-      initializeSocketConnection();
       await handleGetChats();
     };
-
     initializeChat();
   }, []);
 
-  const handleSubmit = async(e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     const trimmedMessage = chatInput.trim();
-    if (trimmedMessage === '') return; // Don't send empty messages
-    setUserMessage(trimmedMessage);
+    if (trimmedMessage === '') return;
     setChatInput('');
-    await handleSendMessage({message:trimmedMessage,chatId:currentChatId})
+    await handleSendMessage({ message: trimmedMessage, chatId: currentChatId })
   }
-const openChat = async (chatId) => {
-    await handleGetMessages({ chatId });
-}
+
+  const openChat = async (chatId) => {
+    await handleOpenChat(chatId, chats);
+  }
+
   return (
     <div className="flex h-screen w-full bg-slate-950 text-white font-sans">
       {/* Left Sidebar */}
@@ -37,40 +38,37 @@ const openChat = async (chatId) => {
         {/* Header */}
         <div className="p-4 border-b border-slate-800">
           <h1 className="text-lg font-semibold text-white mb-4">Perplexity</h1>
-          <button 
-          onClick={()=>{handleSendMessage({message:"Hello",chatId:currentChatId})}}
-          className="w-full flex items-center gap-2 px-3 py-2 rounded bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors">
+          <button
+            onClick={() => { handleSendMessage({ message: "Hello", chatId: null }) }}
+            className="w-full flex items-center gap-2 px-3 py-2 rounded bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors">
             <Plus className="w-4 h-4" />
             <span className="text-sm">New Chat</span>
           </button>
         </div>
-{/* Chat List */}
-<div className="flex-1 overflow-y-auto py-2">
-    <div className="px-4 py-2 text-xs font-medium text-slate-500 uppercase">
-        Recent
-    </div>
 
-    {Object.values(chats).map((chat) => (
-        <div key={chat._id} 
-        type="button"
-        onClick={() => openChat(chat._id)}
-        className="mx-2 p-3 active:scale-95 rounded bg-slate-800 border-l-2 border-white cursor-pointer">
-            <div className="flex justify-between items-center mb-1 cursor-pointer">
-                <span className="text-sm font-medium text-white">{chat.title}</span>
-                <span className="text-xs text-slate-500">Now</span>
+        {/* Chat List */}
+        <div className="flex-1 overflow-y-auto py-2">
+          <div className="px-4 py-2 text-xs font-medium text-slate-500 uppercase">
+            Recent
+          </div>
+
+          {Object.values(chats).map((chat) => (
+            <div
+              key={chat.id}
+              onClick={() => openChat(chat.id)}
+              className={`mx-2 mb-1 p-3 active:scale-95 rounded cursor-pointer transition-colors
+                ${currentChatId === chat.id
+                  ? 'bg-slate-700 border-l-2 border-white'
+                  : 'bg-slate-800 border-l-2 border-transparent hover:bg-slate-700'
+                }`}
+            >
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium text-white truncate">{chat.title}</span>
+                <span className="text-xs text-slate-500 ml-2 shrink-0">Now</span>
+              </div>
             </div>
+          ))}
         </div>
-    ))}
-
-    <div className="mx-2 p-3 rounded hover:bg-slate-800/50 cursor-pointer">
-        <div className="flex justify-between items-center mb-1">
-            <span className="text-sm font-medium text-slate-300">Code Review</span>
-            <span className="text-xs text-slate-500">2h ago</span>
-        </div>
-        <p className="text-xs text-slate-500 truncate">Can you help me optimize...</p>
-    </div>
-
-</div>  {/* ← closes Chat List */}
 
         {/* Bottom */}
         <div className="p-3 border-t border-slate-800">
@@ -103,36 +101,98 @@ const openChat = async (chatId) => {
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
-          {/* AI Message */}
-          <div className="flex gap-3">
-            <div className="w-8 h-8 rounded bg-slate-800 flex items-center justify-center shrink-0">
-              <span className="text-xs font-bold">AI</span>
-            </div>
-            <div className="flex-1 max-w-2xl">
-              <div className="bg-slate-900 border border-slate-800 rounded-lg px-4 py-3">
-                <p className="text-sm text-slate-200 leading-relaxed">
-                  Hello! I'm your AI assistant. How can I help you today?
-                </p>
+
+          {/* Default AI welcome message */}
+          {!currentChatId && (
+            <div className="flex gap-3">
+              <div className="w-8 h-8 rounded bg-slate-800 flex items-center justify-center shrink-0">
+                <span className="text-xs font-bold">AI</span>
               </div>
-              <span className="text-xs text-slate-600 mt-1 block">21:09</span>
+              <div className="flex-1 max-w-2xl">
+                <div className="bg-slate-900 border border-slate-800 rounded-lg px-4 py-3">
+                  <p className="text-sm text-slate-200 leading-relaxed">
+                    Hello! I'm your AI assistant. How can I help you today?
+                  </p>
+                </div>
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* User Message */}
-          {Object.values(chats[currentChatId]?.messages || []).map((message, index) => (
-  <div key={index} className={`flex gap-3 ${message.role === 'user' ? 'flex-row-reverse' : ''}`}>
-    <div className="w-8 h-8 rounded bg-slate-700 flex items-center justify-center shrink-0">
-      <span className="text-xs font-bold">{message.role === 'user' ? 'U' : 'AI'}</span>
-    </div>
-    <div className="flex-1 max-w-2xl flex flex-col items-end">
-      <div className="bg-slate-900 border border-slate-800 text-slate-200 rounded-lg px-4 py-3">
-        <p className="text-sm leading-relaxed">{message.content}</p>
-      </div>
-    </div>
-  </div>
-))}
+          {/* Chat messages */}
+          {chats[currentChatId]?.messages.map((message, index) => (
+            <div key={index} className={`flex gap-3 ${message.role === 'user' ? 'flex-row-reverse' : ''}`}>
 
-        
+              {/* Avatar */}
+              <div className="w-8 h-8 rounded bg-slate-700 flex items-center justify-center shrink-0">
+                <span className="text-xs  font-bold">{message.role === 'user' ? 'U' : 'AI'}</span>
+              </div>
+
+              {/* Message bubble */}
+              <div className={`flex-1 max-w-2xl flex flex-col ${message.role === 'user' ? 'items-end' : 'items-start'}`}>
+                <div className="bg-slate-900 border border-slate-800 text-slate-200 rounded-lg px-4 py-3">
+
+                  {message.role === 'ai' ? (
+                    // ✅ AI message — rendered as Markdown
+                    <div className="text-sm leading-relaxed">
+                      <ReactMarkdown
+                        components={{
+                          // inline & block code
+                          code({ className, children, ...props }) {
+                            const isInline = !className;
+                            return isInline ? (
+                              <code className="bg-slate-800 text-green-400 px-1 py-0.5 rounded text-xs" {...props}>
+                                {children}
+                              </code>
+                            ) : (
+                              <pre className="bg-slate-800 rounded-lg p-3 overflow-x-auto my-2">
+                                <code className="text-green-400 text-xs" {...props}>
+                                  {children}
+                                </code>
+                              </pre>
+                            );
+                          },
+                          // headings
+                          h1: ({ children }) => <h1 className="text-lg font-bold text-white mt-3 mb-1">{children}</h1>,
+                          h2: ({ children }) => <h2 className="text-base font-bold text-white mt-3 mb-1">{children}</h2>,
+                          h3: ({ children }) => <h3 className="text-sm font-bold text-white mt-2 mb-1">{children}</h3>,
+                          // paragraph
+                          p: ({ children }) => <p className="text-sm text-slate-200 leading-relaxed mb-2">{children}</p>,
+                          // lists
+                          ul: ({ children }) => <ul className="list-disc list-inside text-sm text-slate-200 space-y-1 mb-2">{children}</ul>,
+                          ol: ({ children }) => <ol className="list-decimal list-inside text-sm text-slate-200 space-y-1 mb-2">{children}</ol>,
+                          li: ({ children }) => <li className="text-sm text-slate-200">{children}</li>,
+                          // bold & italic
+                          strong: ({ children }) => <strong className="font-bold text-white">{children}</strong>,
+                          em: ({ children }) => <em className="italic text-slate-300">{children}</em>,
+                          // links
+                          a: ({ href, children }) => (
+                            <a href={href} target="_blank" rel="noreferrer" className="text-blue-400 underline hover:text-blue-300">
+                              {children}
+                            </a>
+                          ),
+                          // horizontal rule
+                          hr: () => <hr className="border-slate-700 my-3" />,
+                          // blockquote
+                          blockquote: ({ children }) => (
+                            <blockquote className="border-l-4 border-slate-600 pl-3 italic text-slate-400 my-2">
+                              {children}
+                            </blockquote>
+                          ),
+                        }}
+                         remarkPlugins={[remarkGfm]}
+                      >
+                        {message.content}
+                      </ReactMarkdown>
+                    </div>
+                  ) : (
+                    // ✅ User message — plain text
+                    <p className="text-sm leading-relaxed">{message.content}</p>
+                  )}
+
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
 
         {/* Input */}
@@ -145,7 +205,7 @@ const openChat = async (chatId) => {
               placeholder="Type a message..."
               className="flex-1 bg-slate-900 border border-slate-800 rounded px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-slate-600"
             />
-            <button 
+            <button
               type="submit"
               className="px-4 py-2.5 bg-slate-900 border border-slate-800 text-white rounded cursor-pointer hover:bg-slate-800 transition-colors"
             >
@@ -160,6 +220,5 @@ const openChat = async (chatId) => {
     </div>
   );
 };
-
 
 export default Dashboard;

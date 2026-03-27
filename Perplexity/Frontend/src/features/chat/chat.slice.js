@@ -31,11 +31,8 @@ const chatSlice = createSlice({
             state.chats[ chatId ].messages.push({ content, role })
         },
        setChats(state, action) {
-    const chats = action.payload;
-    state.chats = chats.reduce((acc, chat) => {
-        acc[chat._id] = { ...chat, messages: [] };
-        return acc;
-    }, {});
+   state.chats = action.payload;
+  
 },
         setCurrentChatId(state, action) {
             state.currentChatId = action.payload;
