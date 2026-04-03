@@ -5,12 +5,23 @@ import { useSelector } from 'react-redux';
 import ReactMarkdown from 'react-markdown';
 import { useEffect } from 'react';
 import remarkGfm from 'remark-gfm'
+import  {useAuth} from "../../auth/hooks/useAuth"
+import { RiLogoutCircleRLine } from "react-icons/ri";
+import {RiPerplexityFill} from "react-icons/ri"
+import {RiDeleteBinLine} from "react-icons/ri"
+
 
 const Dashboard = () => {
   const [chatInput, setChatInput] = useState('')
   const chats = useSelector((state) => state.chat.chats);
+  const loading = useSelector((state) => state.chat.loading);
   const currentChatId = useSelector((state) => state.chat.currentChatId);
-  const { handleSendMessage, handleGetChats, handleOpenChat } = useChat();
+  const streamingMessage = useSelector(
+    state => state.chat.chats[currentChatId]?.streamingMessage
+);
+  const { handleSendMessage, handleGetChats, handleOpenChat,handleDeleteChat } = useChat();
+ const user= useSelector((state)=>state.auth.user)
+const {handlelogout}=useAuth()
 
   useEffect(() => {
     const initializeChat = async () => {
@@ -19,15 +30,27 @@ const Dashboard = () => {
     initializeChat();
   }, []);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    const trimmedMessage = chatInput.trim();
-    if (trimmedMessage === '') return;
-    setChatInput('');
-    await handleSendMessage({ message: trimmedMessage, chatId: currentChatId })
-  }
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-  const openChat = async (chatId) => {
+  if (loading) return;
+
+  const trimmedMessage = chatInput.trim();
+  if (trimmedMessage === '') return;
+
+  setChatInput('');
+
+  await handleSendMessage({
+    message: trimmedMessage,
+    chatId: currentChatId
+  });
+};
+
+
+  const logout= async()=>{
+    await handlelogout();
+  }
+    const openChat = async (chatId) => {
     await handleOpenChat(chatId, chats);
   }
 
@@ -37,9 +60,13 @@ const Dashboard = () => {
       <div className="w-72 flex flex-col border-r border-slate-800 bg-slate-900">
         {/* Header */}
         <div className="p-4 border-b border-slate-800">
+          <div className='flex gap-0.5'>
+
+           <RiPerplexityFill className='text-white text-3xl'/>
           <h1 className="text-lg font-semibold text-white mb-4">Perplexity</h1>
+          </div>
           <button
-            onClick={() => { handleSendMessage({ message: "Hello", chatId: null }) }}
+            onClick={() => { handleSendMessage({ message:"hello", chatId: null }) }}
             className="w-full flex items-center gap-2 px-3 py-2 rounded bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors">
             <Plus className="w-4 h-4" />
             <span className="text-sm">New Chat</span>
@@ -57,14 +84,20 @@ const Dashboard = () => {
               key={chat.id}
               onClick={() => openChat(chat.id)}
               className={`mx-2 mb-1 p-3 active:scale-95 rounded cursor-pointer transition-colors
-                ${currentChatId === chat.id
+                ${currentChatId === chat._id
                   ? 'bg-slate-700 border-l-2 border-white'
                   : 'bg-slate-800 border-l-2 border-transparent hover:bg-slate-700'
                 }`}
             >
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium text-white truncate">{chat.title}</span>
-                <span className="text-xs text-slate-500 ml-2 shrink-0">Now</span>
+            <RiDeleteBinLine 
+  onClick={(e) => { 
+    e.stopPropagation(); 
+    
+    handleDeleteChat(chat.id); 
+  }} 
+/>
               </div>
             </div>
           ))}
@@ -78,12 +111,18 @@ const Dashboard = () => {
           </button>
           <div className="flex items-center gap-3 px-3 py-2 mt-2 rounded bg-slate-800/50">
             <div className="w-8 h-8 rounded bg-slate-700 flex items-center justify-center text-xs font-medium">
-              JD
+              {user?.username.charAt(0).toUpperCase()}
             </div>
             <div className="flex-1">
-              <p className="text-sm font-medium">John Doe</p>
+              <p className="text-sm font-medium">{user?.username}</p>
             </div>
-            <MoreVertical className="w-4 h-4 text-slate-500" />
+           <div>
+    
+     
+      <RiLogoutCircleRLine size={24} onClick={()=>logout()} className='text-red-500  cursor-pointer' />
+     
+      
+    </div>
           </div>
         </div>
       </div>
@@ -94,9 +133,9 @@ const Dashboard = () => {
         <div className="h-14 border-b border-slate-800 flex items-center justify-between px-6">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-green-500"></div>
-            <h2 className="font-medium">General Chat</h2>
+            <h2 className="font-medium">{chats[currentChatId]?.title || 'General Chat'}</h2>
           </div>
-          <span className="text-xs bg-slate-800 px-2 py-1 rounded text-slate-400">GPT-4</span>
+         <RiPerplexityFill className='text-white text-3xl'/>
         </div>
 
         {/* Messages */}
@@ -117,82 +156,70 @@ const Dashboard = () => {
               </div>
             </div>
           )}
+    {chats[currentChatId]?.messages.map((message, index) => (
+    <div key={index} className={`flex gap-3 ${message.role === 'user' ? 'flex-row-reverse' : ''}`}>
 
-          {/* Chat messages */}
-          {chats[currentChatId]?.messages.map((message, index) => (
-            <div key={index} className={`flex gap-3 ${message.role === 'user' ? 'flex-row-reverse' : ''}`}>
+        {/* Message bubble */}
+        <div className={`flex-1 max-w-2xl flex flex-col ${message.role === 'user' ? 'items-end' : 'items-start'}`}>
 
-              {/* Avatar */}
-              <div className="w-8 h-8 rounded bg-slate-700 flex items-center justify-center shrink-0">
-                <span className="text-xs  font-bold">{message.role === 'user' ? 'U' : 'AI'}</span>
-              </div>
-
-              {/* Message bubble */}
-              <div className={`flex-1 max-w-2xl flex flex-col ${message.role === 'user' ? 'items-end' : 'items-start'}`}>
-                <div className="bg-slate-900 border border-slate-800 text-slate-200 rounded-lg px-4 py-3">
-
-                  {message.role === 'ai' ? (
-                    // ✅ AI message — rendered as Markdown
-                    <div className="text-sm leading-relaxed">
-                      <ReactMarkdown
+            {message.role === 'ai' ? (
+                <div className="text-sm leading-relaxed">
+                    {/* ✅ always show content with ReactMarkdown */}
+                    <ReactMarkdown
                         components={{
-                          // inline & block code
-                          code({ className, children, ...props }) {
-                            const isInline = !className;
-                            return isInline ? (
-                              <code className="bg-slate-800 text-green-400 px-1 py-0.5 rounded text-xs" {...props}>
-                                {children}
-                              </code>
-                            ) : (
-                              <pre className="bg-slate-800 rounded-lg p-3 overflow-x-auto my-2">
-                                <code className="text-green-400 text-xs" {...props}>
-                                  {children}
-                                </code>
-                              </pre>
-                            );
-                          },
-                          // headings
-                          h1: ({ children }) => <h1 className="text-lg font-bold text-white mt-3 mb-1">{children}</h1>,
-                          h2: ({ children }) => <h2 className="text-base font-bold text-white mt-3 mb-1">{children}</h2>,
-                          h3: ({ children }) => <h3 className="text-sm font-bold text-white mt-2 mb-1">{children}</h3>,
-                          // paragraph
-                          p: ({ children }) => <p className="text-sm text-slate-200 leading-relaxed mb-2">{children}</p>,
-                          // lists
-                          ul: ({ children }) => <ul className="list-disc list-inside text-sm text-slate-200 space-y-1 mb-2">{children}</ul>,
-                          ol: ({ children }) => <ol className="list-decimal list-inside text-sm text-slate-200 space-y-1 mb-2">{children}</ol>,
-                          li: ({ children }) => <li className="text-sm text-slate-200">{children}</li>,
-                          // bold & italic
-                          strong: ({ children }) => <strong className="font-bold text-white">{children}</strong>,
-                          em: ({ children }) => <em className="italic text-slate-300">{children}</em>,
-                          // links
-                          a: ({ href, children }) => (
-                            <a href={href} target="_blank" rel="noreferrer" className="text-blue-400 underline hover:text-blue-300">
-                              {children}
-                            </a>
-                          ),
-                          // horizontal rule
-                          hr: () => <hr className="border-slate-700 my-3" />,
-                          // blockquote
-                          blockquote: ({ children }) => (
-                            <blockquote className="border-l-4 border-slate-600 pl-3 italic text-slate-400 my-2">
-                              {children}
-                            </blockquote>
-                          ),
+                            code({ className, children, ...props }) {
+                                const isInline = !className;
+                                return isInline ? (
+                                    <code className="bg-slate-800 text-green-400 px-1 py-0.5 rounded text-xs" {...props}>
+                                        {children}
+                                    </code>
+                                ) : (
+                                    <pre className="bg-slate-800 rounded-lg p-3 overflow-x-auto my-2">
+                                        <code className="text-green-400 text-xs" {...props}>
+                                            {children}
+                                        </code>
+                                    </pre>
+                                );
+                            },
+                            h1: ({ children }) => <h1 className="text-lg font-bold text-white mt-3 mb-1">{children}</h1>,
+                            h2: ({ children }) => <h2 className="text-base font-bold text-white mt-3 mb-1">{children}</h2>,
+                            p: ({ children }) => <p className="text-sm text-slate-200 leading-relaxed mb-2">{children}</p>,
                         }}
-                         remarkPlugins={[remarkGfm]}
-                      >
+                        remarkPlugins={[remarkGfm]}
+                    >
                         {message.content}
-                      </ReactMarkdown>
-                    </div>
-                  ) : (
-                    // ✅ User message — plain text
-                    <p className="text-sm leading-relaxed">{message.content}</p>
-                  )}
-
+                    </ReactMarkdown>
                 </div>
-              </div>
-            </div>
-          ))}
+            ) : (
+                <div className="bg-slate-900 border border-slate-800 text-slate-200 rounded-lg px-4 py-3">
+                    <p className="text-sm leading-relaxed">{message.content}</p>
+                </div>
+            )}
+        </div>
+      </div>
+    ))}
+                  {streamingMessage && (
+    <div className="flex gap-3">
+        
+       
+        <div className="flex-1 max-w-2xl">
+          
+                <p className="text-sm text-slate-200 leading-relaxed">
+                    {streamingMessage}
+                </p>
+            
+        </div>
+    </div>
+)}
+       
+
+{loading && !streamingMessage && (
+    <div className="flex gap-3">
+     
+       <p className="text-sm text-slate-200">Loading....</p>
+    </div>
+)}
+
         </div>
 
         {/* Input */}

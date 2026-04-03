@@ -1,7 +1,8 @@
 import userModel from "../model/user.model.js";
 import jwt from "jsonwebtoken";
 import { sendEmail } from "../services/mailer.service.js";
-
+import redis from "../config/chache.js";
+import blacklistModel from"../model/blacklist.model.js";
 
 /**
  * @desc Register a new user
@@ -185,4 +186,17 @@ export async function verifyEmail(req, res) {
             err: err.message
         })
     }
+}
+
+
+export async function logout(req, res) {
+ const token = req.cookies.token
+
+ res.clearCookie("token")
+   await redis.set(token, Date.now().toString(), "EX", 60 * 60)
+
+ return res.status(200).json({
+    message:"logout successfully"
+ })
+
 }

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { useAuth } from '../hooks/useAuth'
 import { useNavigate } from 'react-router'
-
+import { RiEyeLine, RiEyeOffLine } from "react-icons/ri";
 const Login = () => {
   const {handleLogin}=useAuth()
   const user=useSelector(state=>state.auth.user)
@@ -78,7 +78,7 @@ if(!loading && user){
                   onClick={() => setShowPassword(!showPassword)}
                   className='absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-200 text-lg'
                 >
-                  {showPassword ? '👁️' : '👁️‍🗨️'}
+                  {showPassword ? <RiEyeLine /> : <RiEyeOffLine />}
                 </button>
               </div>
             </div>

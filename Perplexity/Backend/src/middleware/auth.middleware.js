@@ -1,7 +1,8 @@
 import jwt from 'jsonwebtoken';
-
+import redis from "../config/chache.js";
 export async function authUser(req, res, next) {
     const token= req.cookies.token
+  
 
     if(!token){
         return res.status(401).json({
@@ -10,6 +11,15 @@ export async function authUser(req, res, next) {
             err: "No token provided"
         })
     }
+     const isTokenBlacklisted = await redis.get(token)
+
+    if (isTokenBlacklisted) {
+        return res.status(401).json({
+            message: "Invalid token"
+        });
+    }
+    
+
     try {const decoded= jwt.verify(token, process.env.JWT_SECRET)
     req.user= decoded
     next()

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-
+import { RiEyeLine, RiEyeOffLine } from "react-icons/ri";
 const Register = () => {
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
@@ -82,7 +82,7 @@ const Register = () => {
                   onClick={() => setShowPassword(!showPassword)}
                   className='absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-200 text-lg'
                 >
-                  {showPassword ? '👁️' : '👁️‍🗨️'}
+                   {showPassword ? <RiEyeLine /> : <RiEyeOffLine />}
                 </button>
               </div>
               <p className='text-xs text-slate-400 mt-1'>
