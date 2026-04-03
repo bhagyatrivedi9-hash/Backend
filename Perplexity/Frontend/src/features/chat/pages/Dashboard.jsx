@@ -200,14 +200,33 @@ const handleSubmit = async (e) => {
     ))}
                   {streamingMessage && (
     <div className="flex gap-3">
-        
-       
         <div className="flex-1 max-w-2xl">
-          
-                <p className="text-sm text-slate-200 leading-relaxed">
+            <div className="text-sm leading-relaxed">
+                <ReactMarkdown
+                    components={{
+                        code({ className, children, ...props }) {
+                            const isInline = !className;
+                            return isInline ? (
+                                <code className="bg-slate-800 text-green-400 px-1 py-0.5 rounded text-xs" {...props}>
+                                    {children}
+                                </code>
+                            ) : (
+                                <pre className="bg-slate-800 rounded-lg p-3 overflow-x-auto my-2">
+                                    <code className="text-green-400 text-xs" {...props}>
+                                        {children}
+                                    </code>
+                                </pre>
+                            );
+                        },
+                        h1: ({ children }) => <h1 className="text-lg font-bold text-white mt-3 mb-1">{children}</h1>,
+                        h2: ({ children }) => <h2 className="text-base font-bold text-white mt-3 mb-1">{children}</h2>,
+                        p: ({ children }) => <p className="text-sm text-slate-200 leading-relaxed mb-2">{children}</p>,
+                    }}
+                    remarkPlugins={[remarkGfm]}
+                >
                     {streamingMessage}
-                </p>
-            
+                </ReactMarkdown>
+            </div>
         </div>
     </div>
 )}
