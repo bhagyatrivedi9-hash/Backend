@@ -1,35 +1,30 @@
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
-import  {useAuth} from "../hook/useAuth.js"
-import {   useNavigate } from 'react-router-dom';
-const Register = () => {
-  const {handleRegister}= useAuth()
+import { useAuth } from "../hook/useAuth.js"
+  import { useNavigate } from 'react-router-dom';
+
+const Login = () => {
+  const { handleLogin } = useAuth()
   const navigate = useNavigate()
   const [formData, setFormData] = useState({
-    fullname: '',
     email: '',
-    contact: '',
-    password: '',
-    isSeller: false
+    password: ''
   });
 
   const handleChange = (e) => {
-    const { name, type, checked, value } = e.target;
+    const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: value
     }));
   };
 
   const handleSubmit = async(e) => {
     e.preventDefault();
     console.log("Form submitted", formData);
-    await handleRegister({ 
-      email:formData.email,
-      contact:formData.contact,
-      password:formData.password,
-      fullname:formData.fullname,
-      isSeller:formData.isSeller
+    await handleLogin({ 
+      email: formData.email,
+      password: formData.password
     })
     navigate("/")
   };
@@ -47,10 +42,10 @@ const Register = () => {
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
         <div className="absolute bottom-12 left-8 lg:left-12 right-8 lg:right-12 text-left">
           <h1 className="text-5xl lg:text-7xl font-['Bodoni_Moda'] text-white font-bold tracking-tight mb-4 leading-tight">
-            Elevate <br /> <span className="text-[#FFD700]">Your Style.</span>
+            Welcome <br /> <span className="text-[#FFD700]">Back.</span>
           </h1>
           <p className="text-[#cccccc] text-base lg:text-lg font-light tracking-wide max-w-md">
-            Join the exclusive fashion community. Discover the latest avant-garde collections and redefine your wardrobe.
+            Enter your credentials to access the exclusive fashion community and your personalized wardrobe.
           </p>
         </div>
         {/* Brand mark */}
@@ -69,27 +64,10 @@ const Register = () => {
              <span className="font-['Bodoni_Moda'] text-4xl tracking-[0.2em] text-[#FFD700] font-black uppercase">Snitch</span>
           </div>
 
-          <h2 className="text-4xl font-bold text-white mb-2 tracking-wide">Create Account</h2>
-          <p className="text-[#aaaaaa] mb-10 text-sm font-light tracking-wide">Enter your details and join Snitch today.</p>
+          <h2 className="text-4xl font-bold text-white mb-2 tracking-wide">Sign In</h2>
+          <p className="text-[#aaaaaa] mb-10 text-sm font-light tracking-wide">Enter your details to access your account.</p>
 
           <form onSubmit={handleSubmit} className="space-y-7">
-            {/* Name Field */}
-            <div className="relative group">
-              <input
-                type="text"
-                id="fullname"
-                name="fullname"
-                required
-                value={formData.fullname}
-                onChange={handleChange}
-                className="w-full bg-transparent border-b border-[#333333] py-3 text-white focus:outline-none focus:border-[#FFD700] transition-colors peer placeholder-transparent font-light"
-                placeholder="Full Name"
-              />
-              <label htmlFor="fullname" className="absolute left-0 -top-3 text-[#777777] text-xs transition-all peer-placeholder-shown:text-sm peer-placeholder-shown:text-[#777777] peer-placeholder-shown:top-3 peer-focus:-top-3 peer-focus:text-xs peer-focus:text-[#FFD700] uppercase tracking-wider font-medium">
-                Full Name
-              </label>
-            </div>
-
             {/* Email Field */}
             <div className="relative group">
               <input
@@ -104,23 +82,6 @@ const Register = () => {
               />
               <label htmlFor="email" className="absolute left-0 -top-3 text-[#777777] text-xs transition-all peer-placeholder-shown:text-sm peer-placeholder-shown:text-[#777777] peer-placeholder-shown:top-3 peer-focus:-top-3 peer-focus:text-xs peer-focus:text-[#FFD700] uppercase tracking-wider font-medium">
                 Email Address
-              </label>
-            </div>
-
-            {/* Contact Field */}
-            <div className="relative group">
-              <input
-                type="tel"
-                id="contact"
-                name="contact"
-                required
-                value={formData.contact}
-                onChange={handleChange}
-                className="w-full bg-transparent border-b border-[#333333] py-3 text-white focus:outline-none focus:border-[#FFD700] transition-colors peer placeholder-transparent font-light"
-                placeholder="Contact Number"
-              />
-              <label htmlFor="contact" className="absolute left-0 -top-3 text-[#777777] text-xs transition-all peer-placeholder-shown:text-sm peer-placeholder-shown:text-[#777777] peer-placeholder-shown:top-3 peer-focus:-top-3 peer-focus:text-xs peer-focus:text-[#FFD700] uppercase tracking-wider font-medium">
-                Phone Number
               </label>
             </div>
 
@@ -141,41 +102,19 @@ const Register = () => {
               </label>
             </div>
 
-            {/* Buyer / Seller Checkbox */}
-            <div className="pt-2 flex items-center gap-3">
-              <label className="relative flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  id="isSeller"
-                  name="isSeller"
-                  checked={formData.isSeller}
-                  onChange={handleChange}
-                  className="peer sr-only"
-                />
-                <div className="w-5 h-5 flex items-center justify-center border-2 border-[#555555] rounded-sm bg-transparent peer-checked:bg-[#FFD700] peer-checked:border-[#FFD700] hover:border-[#FFD700] transition-all duration-300">
-                  <svg className="w-3.5 h-3.5 text-[#000000] opacity-0 peer-checked:opacity-100 transition-opacity duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-                <span className="ml-3 text-[#cccccc] select-none text-sm font-light hover:text-[#FFD700] transition-colors duration-300">
-                  Register as a Seller
-                </span>
-              </label>
-            </div>
-
             {/* Submit Button */}
             <div className="pt-6">
               <button
                 type="submit"
                 className="w-full bg-[#FFD700] text-black font-bold py-4 px-8 tracking-widest uppercase hover:bg-white transition-colors duration-300"
               >
-                Create Account
+                Sign In
               </button>
             </div>
             
             <div className="text-center mt-6 pt-4 border-t border-[#222222]">
               <p className="text-[#888888] text-xs font-light">
-                Already have an account? <a href="/login" className="text-[#FFD700] hover:text-white transition-colors uppercase tracking-wider ml-1 font-medium">Sign In</a>
+                Don't have an account? <a href="/register" className="text-[#FFD700] hover:text-white transition-colors uppercase tracking-wider ml-1 font-medium">Sign Up</a>
               </p>
             </div>
 
@@ -186,4 +125,4 @@ const Register = () => {
   );
 };
 
-export default Register;
+export default Login;
