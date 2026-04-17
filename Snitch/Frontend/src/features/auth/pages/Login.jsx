@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useAuth } from "../hook/useAuth.js"
   import { useNavigate } from 'react-router-dom';
+  import ContinueWithGoogle from "../components/gooleAuth.jsx"
 
 const Login = () => {
   const { handleLogin } = useAuth()
@@ -111,6 +112,8 @@ const Login = () => {
                 Sign In
               </button>
             </div>
+            {/* Google OAuth Button */}
+            <ContinueWithGoogle />
             
             <div className="text-center mt-6 pt-4 border-t border-[#222222]">
               <p className="text-[#888888] text-xs font-light">

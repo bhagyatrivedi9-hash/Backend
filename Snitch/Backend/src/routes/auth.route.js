@@ -1,6 +1,9 @@
 import { registerValidator ,loginValidator} from "../validator/auth.validator.js";
-import { registerUser,loginUser } from "../controller/auth.controller.js";
+import { registerUser,loginUser,googleCallback } from "../controller/auth.controller.js";
 import {Router} from "express"
+import passport from "passport";
+
+import config from "../config/config.js";
 
 const router= Router()
 
