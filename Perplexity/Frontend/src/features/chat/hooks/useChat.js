@@ -1,69 +1,69 @@
 import { setChats, addMessages, setCurrentChatId, setStreamingMessage, setError, setLoading, createNewChat, addNewMessage } from "../chat.slice";
 import { streamMessage, getChats, getMessages, deleteChat } from "../services/chat.api";
-import { useDispatch ,useSelector} from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { initializeSocketConnection } from "../services/chat.socket";
 import { useRef } from "react";
 
 export const useChat = () => {
 
-const dispatch = useDispatch();
-const currentChatId = useSelector(state => state.chat.currentChatId);
-    const chats = useSelector(state => state.chat.chats); 
+    const dispatch = useDispatch();
+    const currentChatId = useSelector(state => state.chat.currentChatId);
+    const chats = useSelector(state => state.chat.chats);
 
-async function handleSendMessage({ message, chatId }) {
-    dispatch(setLoading(true));
+    async function handleSendMessage({ message, chatId }) {
+        dispatch(setLoading(true));
 
-    let fullMessage = "";
-    let resolvedChatId = chatId;
+        let fullMessage = "";
+        let resolvedChatId = chatId;
 
-    
-    if (resolvedChatId) {
-        dispatch(addNewMessage({ chatId: resolvedChatId, content: message, role: "user" }));
+
+        if (resolvedChatId) {
+            dispatch(addNewMessage({ chatId: resolvedChatId, messages:[{content: message, role: "user" }] }));
+        }
+
+        await streamMessage(resolvedChatId, message, async (chunk, meta) => {
+            if (meta?.chat && !chatId) {
+                resolvedChatId = meta.chat._id;
+                dispatch(createNewChat({ chatId: meta.chat._id, title: meta.chat.title }));
+                dispatch(setCurrentChatId(meta.chat._id));
+
+
+                dispatch(addNewMessage({ chatId: meta.chat._id, messages: [{ content: message, role: "user" }] }));
+            }
+
+            if (chunk) {
+                fullMessage += chunk;
+                dispatch(setStreamingMessage({ chatId: resolvedChatId, message: fullMessage }));
+            }
+        });
+
+
+        dispatch(addNewMessage({ chatId: resolvedChatId, messages: [{ content: fullMessage, role: "ai" }] }));
+        dispatch(setStreamingMessage({ chatId: resolvedChatId, message: "" }));
+        dispatch(setLoading(false));
     }
-
-    await streamMessage(resolvedChatId, message, async (chunk, meta) => {
-        if (meta?.chat && !chatId) {
-            resolvedChatId = meta.chat._id;
-            dispatch(createNewChat({ chatId: meta.chat._id, title: meta.chat.title }));
-            dispatch(setCurrentChatId(meta.chat._id));
-
-          
-            dispatch(addNewMessage({ chatId: meta.chat._id, content: message, role: "user" }));
-        }
-
-        if (chunk) {
-            fullMessage += chunk;
-            dispatch(setStreamingMessage({ chatId: resolvedChatId, message: fullMessage }));
-        }
-    });
-
-    
-    dispatch(addNewMessage({ chatId: resolvedChatId, content: fullMessage, role: "ai" }));
-    dispatch(setStreamingMessage({ chatId: resolvedChatId, message: "" }));
-    dispatch(setLoading(false));
-}
     async function handleGetChats() {
-    dispatch(setLoading(true))
-    const data = await getChats()
-    const { chats } = data
-    dispatch(setChats(chats.reduce((acc, chat) => {
-        acc[chat._id] = {
-            id: chat._id,
-            title: chat.title,
-            messages: [],
-            streamingMessage: "", 
-            lastUpdated: chat.updatedAt,
-        }
-        return acc
-    }, {})))
-    dispatch(setLoading(false))
-}
+        dispatch(setLoading(true))
+        const data = await getChats()
+        const { chats } = data
+        dispatch(setChats(chats.reduce((acc, chat) => {
+            acc[chat._id] = {
+                id: chat._id,
+                title: chat.title,
+                messages: [],
+                streamingMessage: "",
+                lastUpdated: chat.updatedAt,
+            }
+            return acc
+        }, {})))
+        dispatch(setLoading(false))
+    }
     async function handleOpenChat(chatId, chats) {
 
-        console.log(chats[ chatId ]?.messages.length)
+        console.log(chats[chatId]?.messages.length)
 
-        if (chats[ chatId ]?.messages.length === 0) {
-            const data = await getMessages({chatId})
+        if (chats[chatId]?.messages.length === 0) {
+            const data = await getMessages({ chatId })
             const { messages } = data
 
             const formattedMessages = messages.map(msg => ({
@@ -80,10 +80,10 @@ async function handleSendMessage({ message, chatId }) {
     }
 
 
-    async function handleDeleteChat( chatId ) {
-     
+    async function handleDeleteChat(chatId) {
+
         dispatch(setLoading(true))
-        await deleteChat( chatId)
+        await deleteChat(chatId)
         await handleGetChats()
         dispatch(setCurrentChatId(null));
         dispatch(setLoading(false))

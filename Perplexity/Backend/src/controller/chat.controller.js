@@ -1,13 +1,13 @@
 import chatModel from "../model/chat.model.js";
 import messageModel from "../model/message.model.js";
-import {generateResponseStream,generateChatTitle} from "../services/ai.service.js";
+import { generateResponseStream, generateChatTitle } from "../services/ai.service.js";
 
 export const sendMessage = async (req, res) => {
     try {
         const { message } = req.body;
         const chatId = req.params.chatId || null;
 
-       
+
         if (!message || message.trim() === "") {
             return res.status(400).json({
                 success: false,
@@ -17,7 +17,7 @@ export const sendMessage = async (req, res) => {
 
         let chat = null;
 
-    
+
         if (!chatId) {
             const title = await generateChatTitle(message);
             chat = await chatModel.create({
@@ -37,7 +37,7 @@ export const sendMessage = async (req, res) => {
 
         const resolvedChatId = chat._id;
 
-      
+
         res.setHeader("Content-Type", "application/json");
         res.setHeader("Transfer-Encoding", "chunked");
 
@@ -52,16 +52,16 @@ export const sendMessage = async (req, res) => {
             content: message
         });
 
-       
+
         const messages = await messageModel.find({ chat: resolvedChatId });
 
         let fullResponse = "";
         const stream = generateResponseStream(messages);
 
-        
+
         try {
             for await (const chunk of stream) {
-                if (!chunk) continue; 
+                if (!chunk) continue;
 
                 fullResponse += chunk;
 
@@ -78,7 +78,7 @@ export const sendMessage = async (req, res) => {
             fullResponse = "Sorry, I couldn't generate a response.";
         }
 
-       
+
         await messageModel.create({
             chat: resolvedChatId,
             role: "ai",
@@ -100,30 +100,30 @@ export const sendMessage = async (req, res) => {
         }
     }
 };
-export const getChats= async (req,res)=>{
-    const user=req.user;
-    const chats= await chatModel.find({user:user.id});
+export const getChats = async (req, res) => {
+    const user = req.user;
+    const chats = await chatModel.find({ user: user.id });
 
     res.status(200).json({
-        message:"Chats fetched successfully",
+        message: "Chats fetched successfully",
         chats
     })
 }
 
 
-export const getMessages= async (req,res)=>{
+export const getMessages = async (req, res) => {
     const { chatId } = req.params;
-    const userid=req.user.id;
-    const chat= await chatModel.findOne({_id:chatId,user:userid});
-    if(!chat){
+    const userid = req.user.id;
+    const chat = await chatModel.findOne({ _id: chatId, user: userid });
+    if (!chat) {
         return res.status(404).json({
-            success:false,
-            message:"Chat not found"
+            success: false,
+            message: "Chat not found"
         })
     }
-    const messages= await messageModel.find({chat:chatId});
+    const messages = await messageModel.find({ chat: chatId });
     res.status(200).json({
-        success:true,
+        success: true,
         messages
     })
 }
@@ -138,7 +138,7 @@ export const deleteChat = async (req, res) => {
         console.log("chatId:", chatId);
         console.log("userId:", userId);
 
-        
+
         if (!mongoose.Types.ObjectId.isValid(chatId)) {
             return res.status(400).json({
                 success: false,
@@ -146,7 +146,7 @@ export const deleteChat = async (req, res) => {
             });
         }
 
-       
+
         if (!userId) {
             return res.status(401).json({
                 success: false,
@@ -166,7 +166,7 @@ export const deleteChat = async (req, res) => {
             });
         }
 
-    
+
         await chatModel.findByIdAndDelete(chatId);
         await messageModel.deleteMany({ chat: chatId });
 

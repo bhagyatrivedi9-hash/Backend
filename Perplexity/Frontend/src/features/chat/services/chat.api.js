@@ -17,7 +17,7 @@ export const streamMessage = async (chatId, message, onChunk) => {
             "Authorization": `Bearer ${localStorage.getItem("token")}`
         },
         credentials: "include",
-        body: JSON.stringify({ message }) 
+        body: JSON.stringify({ message })
     });
 
     if (!response.ok) {
@@ -37,7 +37,7 @@ export const streamMessage = async (chatId, message, onChunk) => {
 
         buffer += decoder.decode(value);
         const lines = buffer.split("\n");
-        buffer = lines.pop(); 
+        buffer = lines.pop();
 
         for (const line of lines) {
             if (!line.trim()) continue;
@@ -45,9 +45,9 @@ export const streamMessage = async (chatId, message, onChunk) => {
                 const parsed = JSON.parse(line);
                 if (parsed.type === "meta") {
                     meta = parsed;
-                    onChunk("", meta); 
+                    onChunk("", meta);
                 } else if (parsed.type === "chunk") {
-                    onChunk(parsed.data, meta); 
+                    onChunk(parsed.data, meta);
                 }
             } catch (e) {
                 console.error("Failed to parse line:", line);
@@ -61,7 +61,7 @@ export const getChats = async () => {
     return response.data;
 };
 
-export const getMessages = async ({chatId}) => {
+export const getMessages = async ({ chatId }) => {
     const response = await api.get(`/api/chats/messages/${chatId}`);
     return response.data
 };
