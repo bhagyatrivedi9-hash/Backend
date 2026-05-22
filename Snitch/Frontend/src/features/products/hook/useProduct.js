@@ -17,6 +17,7 @@ export const useProduct = ()=>{
 
         const data= await getSellerProducts()
         dispatch(setSellerProducts(data.products))
+        return data.products    
     }
 
     return {

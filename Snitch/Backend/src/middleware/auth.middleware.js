@@ -30,3 +30,28 @@ export const identifySeller= async (req, res, next) => {
     }
 }
 
+export const identifyUser= async (req,res,next)=>{
+
+    const token= req.cookies.token
+
+    if(!token){
+        return res.status(401).json({message:"Unauthorized"})
+    }
+    const decoded= jwt.verify(token,config.JWT_SECRET)
+    if(!decoded){
+        return res.status(401).json({
+            message: "Unauthorized"
+        })
+
+    }
+    try{
+        const user= await userModel.findById(decoded.id)
+        if(!user){
+            return res.status(401).json({message:"Unauthorized"})
+        }
+        req.user=user
+        next()
+    } catch (error) {
+        return res.status(500).json({message:"Internal Server Error"})
+    }
+}
