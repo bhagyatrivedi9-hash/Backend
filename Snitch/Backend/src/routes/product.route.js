@@ -2,7 +2,7 @@ import Router from "express"
 import { identifySeller } from "../middleware/auth.middleware.js"
 import multer from "multer"
 import { createProductValidator } from "../validator/product.validator.js"
-import {createProduct,getSellerProdcuts} from "../controller/product.controller.js"
+import {createProduct,getSellerProdcuts,getAllProducts} from "../controller/product.controller.js"
 
 const router=Router()
 
@@ -19,5 +19,7 @@ router.post("/create",identifySeller,upload.array("images",5),createProductValid
 
 
 router.get("/seller",identifySeller,getSellerProdcuts)
+
+router.get("/",getAllProducts)
 export default router
 

@@ -25,14 +25,19 @@ const Register = () => {
   const handleSubmit = async(e) => {
     e.preventDefault();
     console.log("Form submitted", formData);
-    await handleRegister({ 
+    const user=await handleRegister({ 
       email:formData.email,
       contact:formData.contact,
       password:formData.password,
       fullname:formData.fullname,
       isSeller:formData.isSeller
     })
+    if(user.role==="seller"){
+      navigate("/seller/dashboard")
+    }
+    else if(user.role==="buyer"){ 
     navigate("/")
+    }
   };
 
   return (

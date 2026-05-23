@@ -10,6 +10,7 @@ export const useAuth=()=>{
         const data= await register({ email, contact, password, fullname, isSeller })
         dispatch(setUser(data.user))
         dispatch(setLoading(false))
+        return data.user
     }
 
     const handleLogin = async({ email, password })=>{
@@ -17,12 +18,14 @@ export const useAuth=()=>{
         const data = await login({ email, password })
         dispatch(setUser(data.user))
         dispatch(setLoading(false))
+        return data.user
     }
     const handleGetMe= async()=>{
 
         try{
             dispatch(setLoading(true))
             const data = await getMe()
+          
             dispatch(setUser(data.user))
         }catch(err){
             console.log(err)
