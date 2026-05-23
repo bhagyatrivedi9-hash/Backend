@@ -1,6 +1,7 @@
 import React from 'react';
-
+import { useNavigate } from 'react-router-dom';
 const CustomerProductCard = ({ product, imageUrl }) => {
+  const navigate = useNavigate();
   const formattedPrice = new Intl.NumberFormat('en-IN', {
     style: 'currency',
     currency: product.price?.currency || 'INR',
@@ -9,7 +10,9 @@ const CustomerProductCard = ({ product, imageUrl }) => {
   const displayImage = imageUrl || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=800';
 
   return (
-    <div className="group relative bg-[#0e0e0e] flex flex-col h-full hover:bg-[#131313] transition-colors duration-500 overflow-hidden cursor-pointer">
+     <div 
+         onClick={() => navigate(`/products/${product._id}`)}  
+     className="group relative bg-[#0e0e0e] flex flex-col h-full hover:bg-[#131313] transition-colors duration-500 overflow-hidden cursor-pointer">
       {/* Main Image Container */}
       <div className="relative aspect-[3/4] overflow-hidden bg-[#0a0a0a]">
         <img 

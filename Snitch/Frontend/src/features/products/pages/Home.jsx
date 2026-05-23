@@ -2,10 +2,11 @@ import React, { useEffect } from 'react';
 import { useProduct } from '../hook/useProduct.js';
 import { useSelector } from 'react-redux';
 import CustomerProductCard from '../components/CustomerProductCard.jsx';
-
+import { useNavigate } from 'react-router-dom';
 const Home = () => {
     const { handleGetAllProducts } = useProduct();
     const Allproducts = useSelector((state) => state.product.products);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchAll = async () => {
@@ -64,22 +65,25 @@ const Home = () => {
                             <p className="text-[#666666] text-xs tracking-[0.2em] uppercase font-bold">Discovering pieces...</p>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-16">
-                            {Allproducts.flatMap((product) => {
+                        <div 
+                        
+                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-16">
+                            {Allproducts.map((product) => {
                                 const images = product.images && product.images.length > 0 
                                     ? product.images 
                                     : ['https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=800'];
                                     
-                                return images.map((img, index) => {
-                                    const imgUrl = typeof img === 'string' ? img : img.url;
-                                    return (
-                                        <CustomerProductCard 
-                                            key={`${product._id}-${index}`} 
-                                            product={product} 
-                                            imageUrl={imgUrl} 
-                                        />
-                                    );
-                                });
+                                const firstImg = images[0];
+                                const imgUrl = typeof firstImg === 'string' ? firstImg : firstImg.url;
+
+                                return (
+                                    <CustomerProductCard 
+                                       
+                                        key={product._id} 
+                                        product={product} 
+                                        imageUrl={imgUrl} 
+                                    />
+                                );
                             })}
                         </div>
                     )}
