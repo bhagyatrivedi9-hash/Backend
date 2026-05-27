@@ -59,21 +59,21 @@ const Dashboard = () => {
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                            {sellerProducts.flatMap((product) => {
+                            {sellerProducts.map((product) => {
                                 const images = product.images && product.images.length > 0 
                                     ? product.images 
                                     : ['https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=800'];
                                     
-                                return images.map((img, index) => {
-                                    const imgUrl = typeof img === 'string' ? img : img.url;
-                                    return (
-                                        <ProductCard 
-                                            key={`${product._id}-${index}`} 
-                                            product={product} 
-                                            imageUrl={imgUrl} 
-                                        />
-                                    );
-                                });
+                                const firstImg = images[0];
+                                const imgUrl = typeof firstImg === 'string' ? firstImg : firstImg.url;
+
+                                return (
+                                    <ProductCard 
+                                        key={product._id} 
+                                        product={product} 
+                                        imageUrl={imgUrl} 
+                                    />
+                                );
                             })}
                         </div>
                     )}

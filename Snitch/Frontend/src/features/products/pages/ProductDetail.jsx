@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useProduct } from '../hook/useProduct.js';
 import { useSelector } from 'react-redux';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 
 const ProductDetail = () => {
     const { productId } = useParams();
     const { handleGetProductDetails } = useProduct();
     const productDetails = useSelector(state => state.product.productDetails);
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [selectedVariant, setSelectedVariant] = useState(null);
     const navigate = useNavigate();
+    const location = useLocation();
 
     const fetchDetails = async () => {
         await handleGetProductDetails(productId);
@@ -19,10 +21,25 @@ const ProductDetail = () => {
     }, [productId]);
 
     useEffect(() => {
-        if (productDetails && productDetails.images && productDetails.images.length > 0) {
-            setCurrentIndex(0);
+        if (productDetails?.variants?.length > 0) {
+            const preselectedId = location.state?.selectedVariantId;
+            if (preselectedId) {
+                const variant = productDetails.variants.find(v => v._id === preselectedId);
+                setSelectedVariant(variant || null);
+            } else {
+                setSelectedVariant(null);
+            }
+        } else {
+            setSelectedVariant(null);
         }
-    }, [productDetails]);
+    }, [productDetails, location.state]);
+
+    const displayImages = selectedVariant?.images?.length ? selectedVariant.images : (productDetails?.images || []);
+    const displayPrice = selectedVariant?.price || productDetails?.price;
+
+    useEffect(() => {
+        setCurrentIndex(0);
+    }, [selectedVariant, productDetails]);
 
     if (!productDetails) {
         return (
@@ -59,7 +76,7 @@ const ProductDetail = () => {
                     <div className="flex flex-col-reverse lg:flex-row gap-6">
                         {/* Thumbnails */}
                         <div className="flex lg:flex-col gap-4 overflow-x-auto lg:overflow-x-visible hide-scrollbar pb-2 lg:pb-0">
-                            {productDetails.images?.map((img, idx) => (
+                            {displayImages.map((img, idx) => (
                                 <button 
                                     key={img._id || idx}
                                     onClick={() => setCurrentIndex(idx)}
@@ -72,24 +89,24 @@ const ProductDetail = () => {
                         
                         {/* Main Image */}
                         <div className="flex-1 w-full aspect-[3/4] sm:aspect-[4/5] bg-[#0A0A0A] relative group overflow-hidden border border-[#111111]">
-                            {productDetails.images && productDetails.images[currentIndex] && (
+                            {displayImages[currentIndex] && (
                                 <>
                                     <img 
-                                        src={productDetails.images[currentIndex].url} 
+                                        src={displayImages[currentIndex].url} 
                                         alt={productDetails.title} 
                                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                                     />
                                     {/* Navigation Arrows */}
-                                    {productDetails.images.length > 1 && (
+                                    {displayImages.length > 1 && (
                                         <>
                                             <button 
-                                                onClick={() => setCurrentIndex((prev) => (prev === 0 ? productDetails.images.length - 1 : prev - 1))}
+                                                onClick={() => setCurrentIndex((prev) => (prev === 0 ? displayImages.length - 1 : prev - 1))}
                                                 className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-[#FFD700] hover:text-black"
                                             >
                                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
                                             </button>
                                             <button 
-                                                onClick={() => setCurrentIndex((prev) => (prev === productDetails.images.length - 1 ? 0 : prev + 1))}
+                                                onClick={() => setCurrentIndex((prev) => (prev === displayImages.length - 1 ? 0 : prev + 1))}
                                                 className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-[#FFD700] hover:text-black"
                                             >
                                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
@@ -109,15 +126,61 @@ const ProductDetail = () => {
                         </h1>
                         
                         <div className="text-xl tracking-widest font-light mb-8">
-                            {productDetails.price?.currency === 'INR' ? '₹' : productDetails.price?.currency} 
-                            {productDetails.price?.amount}
+                            {displayPrice?.currency === 'INR' ? '₹' : displayPrice?.currency} 
+                            {displayPrice?.amount}
                         </div>
 
                         <div className="w-12 h-[1px] bg-[#333333] mb-8"></div>
 
-                        <p className="text-[#888888] leading-relaxed mb-12 text-sm font-light">
+                        <p className="text-[#888888] leading-relaxed mb-8 text-sm font-light">
                             {productDetails.description}
                         </p>
+
+                        {/* Variants Selection */}
+                        {productDetails.variants && productDetails.variants.length > 0 && (
+                            <div className="mb-8">
+                                <span className="text-xs tracking-widest uppercase font-bold text-[#666666] mb-3 block">Variants</span>
+                                <div className="flex flex-wrap gap-3">
+                                    {productDetails.variants.map((variant) => {
+                                        const variantImg = variant.images && variant.images.length > 0 ? variant.images[0].url : null;
+                                        const attributeText = variant.attributes ? Object.values(variant.attributes).join(' - ') : 'Variant';
+                                        const isSelected = selectedVariant?._id === variant._id;
+                                        
+                                        return (
+                                            <div key={variant._id} className="flex flex-col items-center gap-2">
+                                                <button
+                                                    onClick={() => setSelectedVariant(variant)}
+                                                    className={`relative w-14 h-16 border transition-all duration-300 overflow-hidden ${
+                                                        isSelected 
+                                                        ? 'border-[#FFD700]' 
+                                                        : 'border-[#333333] opacity-60 hover:opacity-100 hover:border-white'
+                                                    }`}
+                                                    title={attributeText}
+                                                >
+                                                    {variantImg ? (
+                                                        <img src={variantImg} alt={attributeText} className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <div className="w-full h-full bg-[#111111] flex items-center justify-center text-[10px] text-[#666666] uppercase tracking-tighter">
+                                                            {variant.attributes ? Object.values(variant.attributes)[0] : 'V'}
+                                                        </div>
+                                                    )}
+                                                </button>
+                                                <span className={`text-[10px] uppercase tracking-widest transition-colors duration-300 ${isSelected ? 'text-[#FFD700]' : 'text-[#666666]'}`}>
+                                                    {attributeText}
+                                                </span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Stock */}
+                        {selectedVariant && selectedVariant.stock !== undefined && (
+                            <div className="text-[#888888] text-xs tracking-widest uppercase mb-6 font-bold">
+                                {selectedVariant.stock > 0 ? `${selectedVariant.stock} in stock` : 'Out of stock'}
+                            </div>
+                        )}
 
                         {/* Actions */}
                         <div className="flex flex-col sm:flex-row gap-4">

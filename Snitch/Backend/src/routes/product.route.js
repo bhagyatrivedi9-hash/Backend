@@ -2,7 +2,7 @@ import Router from "express"
 import { identifySeller } from "../middleware/auth.middleware.js"
 import multer from "multer"
 import { createProductValidator } from "../validator/product.validator.js"
-import {createProduct,getSellerProdcuts,getAllProducts,getProductDetails} from "../controller/product.controller.js"
+import {createProduct,getSellerProdcuts,getAllProducts,getProductDetails,createProductVariant} from "../controller/product.controller.js"
 
 const router=Router()
 
@@ -23,6 +23,8 @@ router.get("/seller",identifySeller,getSellerProdcuts)
 router.get("/",getAllProducts)
 
 router.get("/details/:Id", getProductDetails)
+
+router.post("/:productId/variant",identifySeller,upload.array("images",5),createProductVariant)
 
 
 export default router

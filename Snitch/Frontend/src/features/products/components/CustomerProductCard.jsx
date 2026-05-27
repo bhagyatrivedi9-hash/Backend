@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+
 const CustomerProductCard = ({ product, imageUrl }) => {
   const navigate = useNavigate();
   const formattedPrice = new Intl.NumberFormat('en-IN', {
