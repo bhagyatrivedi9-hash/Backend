@@ -25,9 +25,9 @@ const ProductDetail = () => {
             const preselectedId = location.state?.selectedVariantId;
             if (preselectedId) {
                 const variant = productDetails.variants.find(v => v._id === preselectedId);
-                setSelectedVariant(variant || null);
+                setSelectedVariant(variant || productDetails.variants[0]);
             } else {
-                setSelectedVariant(null);
+                setSelectedVariant(productDetails.variants[0]);
             }
         } else {
             setSelectedVariant(null);
