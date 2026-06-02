@@ -3,8 +3,10 @@ import { useProduct } from '../hook/useProduct.js';
 import { useSelector } from 'react-redux';
 import CustomerProductCard from '../components/CustomerProductCard.jsx';
 import { useNavigate } from 'react-router-dom';
+import { useCart } from '../../cart/hook/useCart.js';
 const Home = () => {
     const { handleGetAllProducts } = useProduct();
+     
     const Allproducts = useSelector((state) => state.product.products);
     const navigate = useNavigate();
 
@@ -18,34 +20,7 @@ const Home = () => {
     return (
         <div className="min-h-screen bg-[#000000] text-white font-['Inter'] selection:bg-[#FFD700] selection:text-black">
             {/* Minimalist Branded Navigation Bar */}
-            <nav className="border-b border-[#111111] bg-[#000000] sticky top-0 z-50 bg-opacity-80 backdrop-blur-md">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center h-24">
-                        {/* Brand Logo */}
-                        <div className="flex items-center gap-3">
-                            <span className="font-['Bodoni_Moda'] text-3xl md:text-4xl tracking-[0.2em] text-[#FFD700] font-black uppercase">
-                                Snitch
-                            </span>
-                        </div>
-
-                        {/* Navigation Links (Visual Only) */}
-                        <div className="hidden md:flex space-x-12">
-                            <a href="#" className="text-xs font-bold tracking-[0.15em] uppercase text-white hover:text-[#FFD700] transition-colors">Collection</a>
-                            <a href="#" className="text-xs font-bold tracking-[0.15em] uppercase text-[#666666] hover:text-[#FFD700] transition-colors">Campaigns</a>
-                            <a href="#" className="text-xs font-bold tracking-[0.15em] uppercase text-[#666666] hover:text-[#FFD700] transition-colors">Maison</a>
-                        </div>
-
-                        {/* User / Cart Action */}
-                        <div>
-                            <button className="inline-flex items-center justify-center w-12 h-12 bg-transparent text-white hover:text-[#FFD700] transition-colors duration-300">
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </nav>
+          
 
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
                 {/* Hero / Header */}

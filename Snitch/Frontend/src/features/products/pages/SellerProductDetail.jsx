@@ -138,23 +138,7 @@ const SellerProductDetail = () => {
 
     return (
         <div className="min-h-screen bg-[#000000] text-white font-['Inter'] selection:bg-[#FFD700] selection:text-black">
-            {/* Minimalist Header */}
-            <nav className="border-b border-[#222222] bg-[#000000] sticky top-0 z-50">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center h-20">
-                        <button onClick={() => navigate(-1)} className="text-[#666666] hover:text-[#FFD700] transition-colors flex items-center gap-2">
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                            </svg>
-                            <span className="text-xs tracking-widest uppercase font-bold hidden sm:inline">Back to Dashboard</span>
-                        </button>
-                        <span className="font-['Bodoni_Moda'] text-2xl tracking-[0.2em] text-[#FFD700] font-black uppercase">
-                            Snitch <span className="text-[#555] text-sm ml-2">Seller</span>
-                        </span>
-                        <div className="w-16"></div> {/* Spacer */}
-                    </div>
-                </div>
-            </nav>
+          
 
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
                 

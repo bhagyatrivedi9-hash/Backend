@@ -1,17 +1,17 @@
 import mongoose from "mongoose";
 
 const priceSchema = new mongoose.Schema({
-    price: {
+   
         amount: {
             type: Number,
             required: true
         },
         currency: {
             type: String,
-            enum: ["USD", "EUR", "GBP", "JPY", "AUD", "CAD"],      
+            enum: ["USD", "EUR","INR", "GBP", "JPY", "AUD", "CAD"],      
             default: "INR"
         }
-    }
+    
 }, {
     _id: false,
     _v: false
