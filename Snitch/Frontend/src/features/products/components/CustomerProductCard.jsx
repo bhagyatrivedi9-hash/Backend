@@ -38,7 +38,7 @@ const CustomerProductCard = ({ product, imageUrl }) => {
         </h3>
         
         <p className="text-[#666666] text-xs tracking-widest uppercase font-light mb-4">
-          Archive
+          Archiv
         </p>
       </div>
     </div>

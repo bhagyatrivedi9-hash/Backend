@@ -5,7 +5,7 @@ import ProductCard from '../components/ProductCard.jsx'
 
 const Dashboard = () => {
     const { handleGetSellerProducts } = useProduct()
-    const sellerProducts = useSelector((state) => state.product.sellerproducts)
+    const sellerProducts  = useSelector((state) => state.product.sellerproducts)
 
     useEffect(() => {
         const fetchData = async () => {
