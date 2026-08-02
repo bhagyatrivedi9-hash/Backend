@@ -4,4 +4,3 @@ const kc = new k8s.KubeConfig()
 kc.loadFromDefault()
 
 export const k8sCoreApi = kc.makeApiClient(k8s.CoreV1Api)
-

@@ -2,8 +2,8 @@ import { k8sCoreApi } from "./config.js";
 
 export async function createPod(sandboxId) {
     const podManifest = {
-        apiVersion: "v1",
-        kind: "Pod",
+          apiVersion: "v1",
+         kind: "Pod",
         metadata: {
             name: `sandbox-${sandboxId}`,
             labels: {
@@ -12,28 +12,61 @@ export async function createPod(sandboxId) {
             },
         },
         spec: {
+
+             volumes:[
+                {
+                    name: "workspace-volume",
+                    emptyDir: {}
+                }
+             ],
+             initContainers: [
+                     {
+                    name: 'init-container',
+                    image: "template",
+                    imagePullPolicy: "IfNotPresent",
+                    command: [ 'sh', '-c', 'cp -r /workspace/. /seed/' ],
+                    volumeMounts: [
+                        {
+                            name: 'workspace-volume',
+                            mountPath: '/seed'
+                        }
+                    ]
+                }
+             ],
             containers: [
                 {
                     name: "sandbox-container",
                     image: "template",
                     imagePullPolicy: "IfNotPresent",
-                    ports: [
-                        {
-                            containerPort: 5173,
-                            name: "http",
-                        },
+                    ports: [ { containerPort: 5173,name: "http",protocol: "TCP" },
                     ],
                     resources: {
-                        limits: {
-                            cpu: "500m",
-                            memory: "1Gi",
-                        },
-                        requests: {
-                            cpu: "250m",
-                            memory: "500Mi",
-                        },
+                        limits: {cpu: "500m",memory: "1Gi", },
+                        requests: {cpu: "250m",memory: "500Mi",},
                     },
+                    volumeMounts:[
+                        {
+                               name: 'workspace-volume',
+                            mountPath: '/workspace'
+                        }
+                    ]
                 },
+                {  
+                    name: "agent-container",
+                    image: "agent",
+                    imagePullPolicy: "IfNotPresent",
+                    ports: [ { containerPort: 3000,name: "http",protocol: "TCP" },],
+                    resources: {
+                        limits: {cpu: "500m",memory: "1Gi", },
+                        requests: {cpu: "250m",memory: "500Mi",},
+                    },
+                    volumeMounts:[
+                    {
+                           name: 'workspace-volume',
+                            mountPath: '/workspace'
+                    }
+                    ]
+                }
             ],
         },
     };

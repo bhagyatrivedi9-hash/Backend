@@ -1,9 +1,11 @@
 import express from "express"
-import { createProxyMiddleware } from "http-proxy-middleware"
 import morgan from "morgan"
+import {createProxyMiddleware} from "http-proxy-middleware"
 
 
-const app= express()
+const app =express()
+
+app.use(express.json())
 
 app.use(morgan("combined"))
 
@@ -20,33 +22,56 @@ app.get("/api/router/status/readyz", (req, res) => {
     status: "ready"
   });
 });
- const proxies={}
-function getproxy(sandboxId){
 
-  const target= `http://sandbox-service-${sandboxId}`
+const proxies={}
+const agentProxies={}
+function createProxy(sandboxId){
 
-  if(!proxies[sandboxId]){
+    const target= `http://sandbox-service-${sandboxId}`
+
+   if(!proxies[sandboxId]){
     proxies[sandboxId]= createProxyMiddleware({
         target,
         changeOrigin: true,
         ws: true
     })
+       }
+      return proxies[sandboxId]
 }
-return proxies[sandboxId]
-}
-  
 
-app.use((req, res, next) => {
-    const hostname = req.get("host").split(":")[0];
-   
 
-    if (!hostname) {
-        return res.status(400).send("Missing Host header");
+function createAgentProxy(sandboxId){
+
+    const target= `http://sandbox-service-${sandboxId}:3000`
+
+   if(!agentProxies[sandboxId]){
+    agentProxies[sandboxId]= createProxyMiddleware({
+        target,
+        changeOrigin: true,
+        ws: true
+    })
     }
+    return agentProxies[sandboxId]
+}
 
-   const sandboxId = hostname.split(".")[0]; 
 
-    return getproxy(sandboxId)(req, res, next);
-});
+app.use((req,res,next)=>{
+
+     const hostname = req.get("host").split(":")[0];
+
+     if(!hostname){
+        return res.status(400).json({error:"Invalid hostname"})
+     }
+     const sandboxId= hostname.split(".")[0]
+
+     if(hostname.split(".")[1] === "agent"){
+        return createAgentProxy(sandboxId)(req,res,next)
+     }
+
+     if(hostname.split(".")[1] === "preview"){
+        return createProxy(sandboxId)(req,res,next)
+     }
+
+})
 
 export default app

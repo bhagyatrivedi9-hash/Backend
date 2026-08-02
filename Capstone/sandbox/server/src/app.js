@@ -1,21 +1,24 @@
 import express from "express"
 import morgan from "morgan"
+import {v7 as uuid} from "uuid"
 import {createPod} from "./kubernetes/pod.js"
 import {createService} from "./kubernetes/service.js"
-import {v7 as uuid} from "uuid"
 
-const app = express();
+
+const app= express()
 
 app.use(express.json())
 app.use(morgan("dev"))
 app.use(express.urlencoded({extended:true}))
 
-app.get("/api/sandbox/health",(req,res)=>{
-     res.status(200).json({
-        message: "Sandbos api is healthy",
-        status: 'ok'
-     })
+app.get("/api/sandbox/_status/healthz",(req,res)=>{
+
+    res.status(200).json({
+        message: "Sandbox server is healthy",
+        status: "ok"
+    })
 })
+
 
 app.post("/api/sandbox/start",async(req,res)=>{
 
@@ -30,4 +33,4 @@ app.post("/api/sandbox/start",async(req,res)=>{
    })
 })
 
-export default app;
+export default app

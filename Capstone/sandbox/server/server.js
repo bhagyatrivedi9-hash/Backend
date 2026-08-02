@@ -1,5 +1,8 @@
-import app from  "./src/app.js"
 
-app.listen("3000",()=>{
-    console.log("Sandbox is running on PORT 3000")
+import app from "./src/app.js"
+
+
+app.listen(3000,()=>{
+
+    console.log("Sandbox server is running on port 3000")
 })
